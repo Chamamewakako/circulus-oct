@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circulus Octo Spectuum</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=IM+Fell+English:ital@0;1&family=Noto+Serif+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment:      #E8D9B8;
+    --parchment-mid:  #D4C49A;
+    --parchment-dk:   #B8A478;
+    --parchment-bg:   #C8B890;
+    --ink:            #1E1A10;
+    --ink-mid:        #2C2618;
+    --ink-light:      #3D3420;
+    --crimson:        #6B1A2E;
+    --crimson-mid:    #8B2A3E;
+    --dusk-blue:      #1E2E5A;
+    --dusk-mid:       #2A3E78;
+    --gold:           #8B6400;
+    --gold-warm:      #A87800;
+    --gold-bright:    #C89600;
+    --gold-pale:      #D4AA40;
+    --rose-dk:        #7A3850;
+    --sage-dk:        #3A5448;
+
+    --bg:             #C4B088;   /* 羊皮紙メイン背景 */
+    --surface-a:      rgba(107,26,46,0.10);
+    --surface-b:      rgba(30,46,90,0.10);
+    --border-a:       rgba(107,26,46,0.25);
+    --border-b:       rgba(30,46,90,0.22);
+    --border-gold:    rgba(139,100,0,0.25);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Serif JP', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 羊皮紙テクスチャ：紙の風合い */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0.3'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23paper)' opacity='0.06'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+    opacity: 0.7;
+  }
+
+  /* 上下にインクの滲み */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 100% 30% at 50% 0%,   rgba(30,26,16,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 100% 30% at 50% 100%,  rgba(30,26,16,0.22) 0%, transparent 70%),
+      radial-gradient(ellipse 60%  60% at 15% 40%,   rgba(107,26,46,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50%  50% at 85% 60%,   rgba(30,46,90,0.06) 0%, transparent 60%);
+  }
+
+  /* ルーンバンド */
+  .rune-band {
+    position: relative; z-index: 10;
+    width: 100%; padding: 12px 0;
+    border-bottom: 1px solid rgba(139,100,0,0.25);
+    display: flex; align-items: center; justify-content: center; gap: 20px;
+    background: rgba(180,160,110,0.4);
+    backdrop-filter: blur(4px);
+  }
+  .rune-band span {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    color: var(--gold);
+    opacity: 0.85;
+    text-transform: uppercase;
+  }
+  .gem {
+    width: 5px; height: 5px;
+    background: var(--gold-warm);
+    opacity: 0.45;
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  /* コンテナ */
+  .container {
+    position: relative; z-index: 10;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ヘッダー */
+  header {
+    padding: 68px 0 48px;
+    text-align: center;
+    animation: rise 1.6s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.45em;
+    color: var(--gold);
+    opacity: 0.85;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'IM Fell English', serif;
+    font-size: clamp(28px, 7vw, 54px);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--crimson);
+  }
+
+  .subtitle-jp {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(10px, 2vw, 12px);
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--ink-mid);
+    opacity: 0.55;
+    margin-top: 16px;
+    margin-bottom: 40px;
+  }
+
+  /* 区切り */
+  .sep {
+    display: flex; align-items: center; gap: 12px;
+    max-width: 280px; margin: 0 auto 56px;
+  }
+  .sep-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, transparent, rgba(139,100,0,0.35), transparent);
+  }
+  .sep-mark { display: flex; gap: 5px; align-items: center; }
+  .sep-d { width: 5px; height: 5px; background: var(--gold-warm); opacity: 0.45; transform: rotate(45deg); }
+  .sep-d.sm { width: 3px; height: 3px; opacity: 0.28; }
+
+  /* シルヴィアの台詞ブロック */
+  .sylvia-block {
+    position: relative;
+    max-width: 620px;
+    margin: 0 auto 80px;
+    padding: 40px 44px;
+    background: rgba(180,160,110,0.25);
+    border: 1px solid rgba(139,100,0,0.2);
+    border-radius: 1px;
+    animation: rise 2s cubic-bezier(0.22,1,0.36,1) both;
+    animation-delay: 0.15s;
+  }
+  /* 角飾り */
+  .sylvia-block::before, .sylvia-block::after {
+    content: '';
+    position: absolute;
+    width: 24px; height: 24px;
+    border-color: rgba(139,100,0,0.35);
+    border-style: solid;
+  }
+  .sylvia-block::before {
+    top: -1px; left: -1px;
+    border-width: 2px 0 0 2px;
+  }
+  .sylvia-block::after {
+    bottom: -1px; right: -1px;
+    border-width: 0 2px 2px 0;
+  }
+
+  .sylvia-text {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: clamp(13px, 2.4vw, 15px);
+    line-height: 2.2;
+    color: var(--ink-mid);
+  }
+  .sylvia-text strong {
+    font-style: normal;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  .sylvia-text .highlight {
+    color: var(--crimson);
+    font-style: normal;
+  }
+
+  .sylvia-sig {
+    margin-top: 24px;
+    text-align: right;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    opacity: 0.65;
+  }
+  .sylvia-sig span {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    display: block;
+    color: var(--ink-mid);
+    opacity: 0.75;
+    margin-top: 3px;
+  }
+
+  /* セクション見出し */
+  .sec-head {
+    text-align: center;
+    margin-bottom: 36px;
+    animation: rise 2.3s cubic-bezier(0.22,1,0.36,1) both;
+    animation-delay: 0.3s;
+  }
+  .sec-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    opacity: 0.8;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+  .sec-title {
+    font-family: 'IM Fell English', serif;
+    font-size: clamp(18px, 3.5vw, 26px);
+    color: var(--ink);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+
+  /* 三軸 */
+  .axes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 76px;
+    animation: rise 2.5s cubic-bezier(0.22,1,0.36,1) both;
+    animation-delay: 0.35s;
+  }
+
+  .axis-card {
+    padding: 26px 22px;
+    background: rgba(180,160,110,0.2);
+    border: 1px solid var(--border-gold);
+    border-radius: 1px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  }
+  .axis-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 22px; height: 22px;
+    border-top: 1px solid rgba(139,100,0,0.4);
+    border-left: 1px solid rgba(139,100,0,0.4);
+  }
+  .axis-card:hover {
+    background: rgba(180,160,110,0.35);
+    border-color: rgba(139,100,0,0.45);
+    transform: translateY(-2px);
+  }
+
+  .axis-num {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    opacity: 0.75;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .axis-name {
+    font-family: 'IM Fell English', serif;
+    font-size: clamp(14px, 2.5vw, 17px);
+    color: var(--ink);
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+  .axis-poles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pole {
+    padding: 9px 11px;
+    font-size: 10.5px;
+    line-height: 1.8;
+    font-weight: 300;
+    border-radius: 1px;
+  }
+  .pole-a {
+    background: rgba(107,26,46,0.1);
+    border-left: 2px solid rgba(107,26,46,0.35);
+    color: var(--ink-mid);
+  }
+  .pole-b {
+    background: rgba(30,46,90,0.1);
+    border-left: 2px solid rgba(30,46,90,0.35);
+    color: var(--ink-mid);
+  }
+  .pole-key {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .pole-a .pole-key { color: var(--crimson); }
+  .pole-b .pole-key { color: var(--dusk-blue); }
+
+  /* 8タイプ */
+  .cards-wrap {
+    margin-bottom: 76px;
+    animation: rise 2.7s cubic-bezier(0.22,1,0.36,1) both;
+    animation-delay: 0.45s;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 13px;
+  }
+
+  .type-card {
+    padding: 24px 18px 20px;
+    border-radius: 1px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s;
+    cursor: default;
+  }
+  .type-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 18px; height: 18px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+  }
+  .type-card:hover { transform: translateY(-4px); }
+  .type-card:hover::before { opacity: 0.75; }
+
+  /* A群：深紅×羊皮紙 */
+  .group-a {
+    background: rgba(107,26,46,0.08);
+    border: 1px solid var(--border-a);
+  }
+  .group-a::before { border-color: var(--crimson-mid); }
+  .group-a:hover {
+    background: rgba(107,26,46,0.13);
+    border-color: rgba(107,26,46,0.45);
+    box-shadow: 0 8px 32px rgba(107,26,46,0.15);
+  }
+
+  /* B群：藍×羊皮紙 */
+  .group-b {
+    background: rgba(30,46,90,0.08);
+    border: 1px solid var(--border-b);
+  }
+  .group-b::before { border-color: var(--dusk-mid); }
+  .group-b:hover {
+    background: rgba(30,46,90,0.13);
+    border-color: rgba(30,46,90,0.4);
+    box-shadow: 0 8px 32px rgba(30,46,90,0.15);
+  }
+
+  .c-code {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.35em;
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+  .group-a .c-code { color: var(--crimson); }
+  .group-b .c-code { color: var(--dusk-blue); }
+
+  .c-motif {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(17px, 3vw, 21px);
+    font-weight: 500;
+    margin-bottom: 9px;
+    color: var(--ink);
+  }
+
+  .c-en {
+    font-family: 'IM Fell English', serif;
+    font-size: 9.5px;
+    font-style: italic;
+    line-height: 1.65;
+    opacity: 0.5;
+    margin-bottom: 4px;
+    color: var(--ink-mid);
+  }
+  .c-jp {
+    font-size: 9.5px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    opacity: 0.45;
+    color: var(--ink-mid);
+  }
+
+  /* WIP */
+  .wip {
+    text-align: center;
+    padding: 16px;
+    margin-bottom: 68px;
+  }
+  .wip-inner {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 11px 26px;
+    border: 1px solid rgba(139,100,0,0.22);
+    font-family: 'Cinzel', serif;
+    font-size: 9.5px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    opacity: 0.6;
+    text-transform: uppercase;
+  }
+
+  /* フッター */
+  footer {
+    border-top: 1px solid rgba(139,100,0,0.18);
+    padding: 40px 0 52px;
+    text-align: center;
+  }
+  .footer-quote {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: clamp(11px, 2vw, 13px);
+    color: var(--ink-mid);
+    opacity: 0.45;
+    line-height: 2.2;
+    margin-bottom: 16px;
+  }
+  .footer-meta {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.45em;
+    color: var(--gold);
+    opacity: 0.4;
+    text-transform: uppercase;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 48px 0 36px; }
+    .sylvia-block { padding: 28px 24px; }
+    .cards-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
+    .type-card { padding: 18px 13px 16px; }
+    .axes { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ルーンバンド -->
+<div class="rune-band">
+  <div class="gem"></div>
+  <span>Circulus · Octo · Spectuum</span>
+  <div class="gem"></div>
+</div>
+
+<div class="container">
+
+  <!-- ヘッダー -->
+  <header>
+    <p class="eyebrow">The Circle of Eight Perspectives</p>
+    <h1>Circulus<br><em>Octo</em> Spectuum</h1>
+    <p class="subtitle-jp">シルクルス・オクト・スペクトゥム・システム</p>
+    <div class="sep">
+      <div class="sep-line"></div>
+      <div class="sep-mark">
+        <div class="sep-d sm"></div>
+        <div class="sep-d"></div>
+        <div class="sep-d sm"></div>
+      </div>
+      <div class="sep-line"></div>
+    </div>
+  </header>
+
+  <!-- シルヴィアの台詞 -->
+  <div class="sylvia-block">
+    <div class="sylvia-text">
+      いらっしゃい、人間界の皆様。<br>
+      ここはシルクルス・オクト・スペクトゥム。<strong>八色円環の図書館</strong>。<br><br>
+      あなたが好きなのはどんな作品かしら。<br>
+      アニメ、漫画、小説、映画？どれでもいいわ。<br><br>
+      ここは従来の性格診断でも、三流魔女の占いでもない。<br>
+      あなたが <strong>「今、どんな視点から世界を見ているか」</strong> を<br>
+      創作物に対する反応をもとに静かに照らし出す、<br>
+      <span class="highlight">心の居場所が分かる場所</span>。
+    </div>
+    <div class="sylvia-sig">
+      管理人
+      <span>— Silvia Octavia —</span>
+    </div>
+  </div>
+
+  <!-- 三軸 -->
+  <div class="sec-head">
+    <p class="sec-label">Three Axes · 三測定軸</p>
+    <h2 class="sec-title">測定の三つの軸</h2>
+  </div>
+
+  <div class="axes">
+    <div class="axis-card">
+      <div class="axis-num">Axis · I</div>
+      <div class="axis-name">構造 ― 流動</div>
+      <div class="axis-poles">
+        <div class="pole pole-a"><span class="pole-key">A</span>因果・枠組み<br>論理・設計</div>
+        <div class="pole pole-b"><span class="pole-key">B</span>偶然・変化<br>感情・流れ</div>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-num">Axis · II</div>
+      <div class="axis-name">内向 ― 外向</div>
+      <div class="axis-poles">
+        <div class="pole pole-a"><span class="pole-key">A</span>内省・深度<br>没入</div>
+        <div class="pole pole-b"><span class="pole-key">B</span>発露・表現<br>拡散</div>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-num">Axis · III</div>
+      <div class="axis-name">静 ― 動</div>
+      <div class="axis-poles">
+        <div class="pole pole-a"><span class="pole-key">A</span>観測・保持<br>安定</div>
+        <div class="pole pole-b"><span class="pole-key">B</span>発火・跳躍<br>変容</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8タイプ -->
+  <div class="cards-wrap">
+    <div class="sec-head">
+      <p class="sec-label">Eight Perspectives · 八視座</p>
+      <h2 class="sec-title">八つの視座</h2>
+    </div>
+    <div class="cards-grid">
+      <div class="type-card group-a">
+        <div class="c-code">AAA</div>
+        <div class="c-motif">鉱石</div>
+        <div class="c-en">The Keeper of Causal Harmony</div>
+        <div class="c-jp">因果調和の守り手</div>
+      </div>
+      <div class="type-card group-a">
+        <div class="c-code">AAB</div>
+        <div class="c-motif">星図</div>
+        <div class="c-en">The Seer of Story Architecture</div>
+        <div class="c-jp">物語設計の観測者</div>
+      </div>
+      <div class="type-card group-a">
+        <div class="c-code">ABA</div>
+        <div class="c-motif">火花</div>
+        <div class="c-en">The Dancer in Serendipity</div>
+        <div class="c-jp">偶然律動の踊り子</div>
+      </div>
+      <div class="type-card group-a">
+        <div class="c-code">ABB</div>
+        <div class="c-motif">楽譜</div>
+        <div class="c-en">The Reader of Serendipitous Turns</div>
+        <div class="c-jp">偶然韻律の読解者</div>
+      </div>
+      <div class="type-card group-b">
+        <div class="c-code">BAA</div>
+        <div class="c-motif">深海</div>
+        <div class="c-en">The Diver into Emotional Necessity</div>
+        <div class="c-jp">情理必然の潜航者</div>
+      </div>
+      <div class="type-card group-b">
+        <div class="c-code">BAB</div>
+        <div class="c-motif">流星</div>
+        <div class="c-en">The Spectator of Random Wonders</div>
+        <div class="c-jp">無作為奇譚の鑑賞者</div>
+      </div>
+      <div class="type-card group-b">
+        <div class="c-code">BBA</div>
+        <div class="c-motif">ガラス</div>
+        <div class="c-en">The Witness of Transparent Boundaries</div>
+        <div class="c-jp">透過境界の観察者</div>
+      </div>
+      <div class="type-card group-b">
+        <div class="c-code">BBB</div>
+        <div class="c-motif">風</div>
+        <div class="c-en">The Wanderer among Passing Moments</div>
+        <div class="c-jp">瞬きの間の流浪人</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIP -->
+  <div class="wip">
+    <div class="wip-inner">
+      <div class="gem" style="width:4px;height:4px;opacity:0.35;"></div>
+      診断ページは準備中
+      <div class="gem" style="width:4px;height:4px;opacity:0.35;"></div>
+    </div>
+  </div>
+
+  <!-- フッター -->
+  <footer>
+    <p class="footer-quote">
+      これは固定的属性ではなく、<br>
+      状況によって移動する円環構造である。
+    </p>
+    <p class="footer-meta">Circulus Octo Spectuum System · Chamame</p>
+  </footer>
+
+</div>
+</body>
+</html>
