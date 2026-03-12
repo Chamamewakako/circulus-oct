@@ -314,9 +314,35 @@
 
   /* 次へボタン */
   .next-wrap {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     min-height: 52px;
   }
+  .back-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-light);
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    padding: 8px 4px;
+    transition: opacity 0.35s, color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .back-btn.visible {
+    opacity: 0.45;
+    pointer-events: auto;
+  }
+  .back-btn:hover { opacity: 0.85; color: var(--ink); }
   .next-btn {
     display: inline-flex;
     align-items: center;
@@ -606,6 +632,7 @@
   <!-- 質問エリア -->
   <div class="question-stage" id="question-stage"></div>
   <div class="next-wrap" id="next-wrap">
+    <button class="back-btn" id="back-btn" onclick="prevQuestion()">‹ 戻る</button>
     <button class="next-btn" id="next-btn" onclick="nextQuestion()">
       <span class="btn-gem"></span>
       <span id="next-label">次へ</span>
@@ -825,8 +852,27 @@ function selectAnswer(idx, val, btn) {
 function showNextBtn(idx) {
   const btn = document.getElementById('next-btn');
   const label = document.getElementById('next-label');
+  const backBtn = document.getElementById('back-btn');
   label.textContent = idx === 8 ? '結果を見る' : '次へ';
   btn.classList.add('visible');
+  // 1問目は戻るボタン非表示
+  if (idx > 0) backBtn.classList.add('visible');
+  else backBtn.classList.remove('visible');
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  current--;
+  renderProgress();
+  renderQuestion(current);
+  const backBtn = document.getElementById('back-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const label = document.getElementById('next-label');
+  label.textContent = current === 8 ? '結果を見る' : '次へ';
+  if (current === 0) backBtn.classList.remove('visible');
+  else backBtn.classList.add('visible');
+  if (answers[current] !== null) nextBtn.classList.add('visible');
+  else nextBtn.classList.remove('visible');
 }
 
 function nextQuestion() {
