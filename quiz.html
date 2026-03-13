@@ -904,6 +904,12 @@ function calcResult() {
 }
 
 function showResult() {
+  // 先にクイズUIを隠す
+  document.getElementById('quiz-header').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('question-stage').style.display = 'none';
+  document.getElementById('next-wrap').style.display = 'none';
+
   const overlay = document.getElementById('magic-overlay');
   overlay.classList.add('show');
 
@@ -919,12 +925,6 @@ function showResult() {
 }
 
 function _renderResult() {
-  // クイズUI非表示
-  document.getElementById('quiz-header').style.display = 'none';
-  document.getElementById('progress-wrap').style.display = 'none';
-  document.getElementById('question-stage').style.display = 'none';
-  document.getElementById('next-wrap').style.display = 'none';
-
   const { scores, code } = calcResult();
   const type = TYPES[code];
 
